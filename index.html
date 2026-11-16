@@ -58,6 +58,21 @@ p{margin:0 0 14px}
 .find{width:100%;border-collapse:collapse;font-size:15px;display:block;overflow-x:auto}
 .find th,.find td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
 .find th{font-weight:700}
+
+.feed{margin:0 0 28px;max-width:640px;border:1px solid var(--line);border-radius:6px;background:var(--surface);overflow:hidden}
+.feed-bar{display:flex;align-items:center;gap:6px;padding:8px 12px;border-bottom:1px solid var(--line);font-size:13px;color:var(--muted)}
+.feed-bar span{width:9px;height:9px;border-radius:50%;background:var(--line)}
+.feed-bar em{margin-left:8px;font-style:normal}
+.feed-body{height:136px;padding:10px 14px;font:13px/1.6 ui-monospace,Menlo,Consolas,monospace;overflow:hidden}
+.feed-body div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.feed-body .bad{color:var(--flag)}
+.feed-body .ok{color:var(--accent)}
+details.more{margin-top:14px;border-top:1px solid var(--line);padding-top:10px}
+details.more summary{cursor:pointer;font-weight:700;color:var(--accent);padding:6px 0}
+details.more summary:focus-visible{outline:3px solid var(--flag);outline-offset:3px}
+.case{transition:box-shadow .2s,transform .2s}
+.case:hover{box-shadow:0 4px 14px rgba(0,0,0,.12);transform:translateY(-2px)}
+@media (prefers-reduced-motion:reduce){.case{transition:none}.case:hover{transform:none}}
 .job{margin-bottom:6px}
 .job h3{margin:0;font:700 1.1rem var(--serif)}
 .job .when{color:var(--muted);font-size:15px;margin-bottom:10px}
@@ -95,6 +110,11 @@ footer{padding:36px 0 56px;border-top:1px solid var(--line);color:var(--muted);f
   <div class="hero">
     <h1>Detect. Investigate. Respond. That’s the job I’m training for.</h1>
     <p class="role">Entry-level SOC analyst in Lahore, Pakistan. I built a Windows Active Directory lab, simulated attacks against it and confirmed the logs caught them, using Sysmon and Wazuh. I’m also learning GRC through ISO 27001 work.</p>
+
+    <div class="feed" role="img" aria-label="Illustration of Windows security log lines from my Active Directory lab: failed logon events, Event ID 4625, and a Sysmon process create event.">
+      <div class="feed-bar"><span></span><span></span><span></span><em>Illustration from my lab: DC01 Security log</em></div>
+      <div class="feed-body" id="feed-body" aria-hidden="true"></div>
+    </div>
     <div class="btns">
       <a class="btn primary" href="#projects">See my projects</a>
       <a class="btn ghost" href="https://www.linkedin.com/in/malaika-tabassum-09661b2b6/">LinkedIn</a>
@@ -133,7 +153,7 @@ footer{padding:36px 0 56px;border-top:1px solid var(--line);color:var(--muted);f
           <li>Registered both Windows machines as agents in the Wazuh dashboard and confirmed the Wazuh service was running. Wiring Sysmon and Security logs into Wazuh alerts is the next step.</li>
         </ul>
 
-        <h4>Findings</h4>
+        <details class="more"><summary>Show findings and recommendations</summary>
         <table class="find">
           <thead><tr><th scope="col">Finding</th><th scope="col">Impact</th><th scope="col">Recommendation</th></tr></thead>
           <tbody>
@@ -145,6 +165,7 @@ footer{padding:36px 0 56px;border-top:1px solid var(--line);color:var(--muted);f
           </tbody>
         </table>
         <p class="note">Next steps I identified: a full SIEM deployment, Sysmon on every machine, and Active Directory posture checks with Purple Knight or BloodHound.</p>
+        </details>
         <!-- Only add a PDF link if Boston Institute of Analytics allows the report to be shared publicly. -->
       </article>
 
@@ -308,5 +329,29 @@ footer{padding:36px 0 56px;border-top:1px solid var(--line);color:var(--muted);f
   <div class="wrap">© 2026 Malaika Tabassum. Lahore, Pakistan.</div>
 </footer>
 
+
+<script>
+(function(){
+  var el=document.getElementById('feed-body'); if(!el) return;
+  var lines=[
+    ['','Domain: LABtes.local  |  Host: DC01  |  Log: Security'],
+    ['bad','4625  Logon failure   Account: Administrator   Source: 192.168.190.130'],
+    ['bad','4625  Logon failure   Account: Administrator   Source: 192.168.190.130'],
+    ['bad','4625  Logon failure   Account: Administrator   Source: 192.168.190.130'],
+    ['ok','Pattern: repeated failures from one source = possible password guessing'],
+    ['','Sysmon  Event ID 1   Process Create   ping.exe'],
+    ['ok','Next step: check the source host, then recommend a lockout policy']
+  ];
+  function row(l){var d=document.createElement('div');if(l[0])d.className=l[0];d.textContent=l[1];return d;}
+  var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(reduce){lines.forEach(function(l){el.appendChild(row(l));});return;}
+  var n=0;
+  function step(){
+    if(n>=lines.length){setTimeout(function(){el.innerHTML='';n=0;step();},4000);return;}
+    el.appendChild(row(lines[n++]));setTimeout(step,900);
+  }
+  step();
+})();
+</script>
 </body>
 </html>
